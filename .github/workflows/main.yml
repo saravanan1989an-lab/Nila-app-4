@@ -85,19 +85,21 @@ jobs:
                   applicationId "com.nila.ai"
                   minSdk 26
                   targetSdk 35
-                  versionCode 1
-                  versionName "1.0"
+                  versionCode 3
+                  versionName "1.2"
               }
           }
 
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.7.0'
+              implementation 'androidx.core:core:1.13.1'
               implementation 'com.google.android.material:material:1.12.0'
           }
           EOF
 
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
               <uses-permission android:name="android.permission.INTERNET" />
 
               <application
@@ -107,7 +109,8 @@ jobs:
 
                   <activity
                       android:name=".MainActivity"
-                      android:exported="true">
+                      android:exported="true"
+                      android:windowSoftInputMode="adjustResize">
 
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -117,6 +120,7 @@ jobs:
                   </activity>
 
               </application>
+
           </manifest>
           EOF
 
@@ -124,6 +128,8 @@ jobs:
           <resources>
               <style name="Theme.NilaAI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
                   <item name="android:fontFamily">sans</item>
+                  <item name="android:windowLightStatusBar">false</item>
+                  <item name="android:navigationBarColor">#111111</item>
               </style>
           </resources>
           EOF
@@ -136,7 +142,10 @@ jobs:
 
           cat > app/src/main/res/layout/activity_main.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+          <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/rootLayout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
@@ -146,38 +155,15 @@ jobs:
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:text="Nila AI"
-                  android:textSize="26sp"
-                  android:textStyle="bold"
-                  android:paddingBottom="6dp" />
+                  android:textSize="28sp"
+                  android:textStyle="bold" />
 
               <TextView
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:text="உங்கள் personal assistant"
-                  android:textSize="14sp"
-                  android:paddingBottom="12dp" />
-
-              <ScrollView
-                  android:id="@+id/scroll"
-                  android:layout_width="match_parent"
-                  android:layout_height="0dp"
-                  android:layout_weight="1">
-
-                  <LinearLayout
-                      android:id="@+id/chatContainer"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="vertical" />
-
-              </ScrollView>
-
-              <EditText
-                  android:id="@+id/input"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:hint="தமிழ் அல்லது English-ல் type செய்யுங்கள்"
-                  android:minHeight="48dp"
-                  android:padding="12dp" />
+                  android:textSize="15sp"
+                  android:paddingBottom="10dp" />
 
               <LinearLayout
                   android:layout_width="match_parent"
@@ -185,19 +171,139 @@ jobs:
                   android:orientation="horizontal">
 
                   <Button
-                      android:id="@+id/sendBtn"
+                      android:id="@+id/chatModeBtn"
                       android:layout_width="0dp"
                       android:layout_height="wrap_content"
                       android:layout_weight="1"
-                      android:text="Send" />
+                      android:text="Chat" />
 
                   <Button
-                      android:id="@+id/clearBtn"
-                      android:layout_width="wrap_content"
+                      android:id="@+id/photoModeBtn"
+                      android:layout_width="0dp"
                       android:layout_height="wrap_content"
-                      android:text="Clear" />
+                      android:layout_weight="1"
+                      android:text="Photo Edit" />
 
               </LinearLayout>
+
+              <LinearLayout
+                  android:id="@+id/chatPanel"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:orientation="vertical">
+
+                  <ScrollView
+                      android:id="@+id/scroll"
+                      android:layout_width="match_parent"
+                      android:layout_height="0dp"
+                      android:layout_weight="1"
+                      android:fillViewport="true">
+
+                      <LinearLayout
+                          android:id="@+id/chatContainer"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical" />
+
+                  </ScrollView>
+
+                  <EditText
+                      android:id="@+id/input"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:hint="தமிழ் அல்லது English-ல் type செய்யுங்கள்"
+                      android:minHeight="48dp"
+                      android:maxLines="4"
+                      android:padding="12dp" />
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+
+                      <Button
+                          android:id="@+id/sendBtn"
+                          android:layout_width="0dp"
+                          android:layout_height="wrap_content"
+                          android:layout_weight="1"
+                          android:text="Send" />
+
+                      <Button
+                          android:id="@+id/clearBtn"
+                          android:layout_width="0dp"
+                          android:layout_height="wrap_content"
+                          android:layout_weight="1"
+                          android:text="Clear" />
+
+                  </LinearLayout>
+
+              </LinearLayout>
+
+              <ScrollView
+                  android:id="@+id/photoPanel"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:visibility="gone">
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:paddingTop="10dp">
+
+                      <Button
+                          android:id="@+id/choosePhotoBtn"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:text="Choose Photo" />
+
+                      <ImageView
+                          android:id="@+id/photoPreview"
+                          android:layout_width="match_parent"
+                          android:layout_height="360dp"
+                          android:adjustViewBounds="true"
+                          android:scaleType="fitCenter"
+                          android:contentDescription="Photo preview" />
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="horizontal">
+
+                          <Button
+                              android:id="@+id/rotateBtn"
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:text="Rotate" />
+
+                          <Button
+                              android:id="@+id/grayBtn"
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:text="Grayscale" />
+
+                      </LinearLayout>
+
+                      <Button
+                          android:id="@+id/resetBtn"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:text="Reset Photo" />
+
+                      <TextView
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:paddingTop="12dp"
+                          android:text="AI photo editing later சேர்க்கலாம். இப்போது basic offline editing."
+                          android:textSize="14sp" />
+
+                  </LinearLayout>
+
+              </ScrollView>
 
           </LinearLayout>
           EOF
@@ -205,32 +311,113 @@ jobs:
           cat > app/src/main/java/com/nila/ai/MainActivity.java <<'EOF'
           package com.nila.ai;
 
+          import android.graphics.Bitmap;
+          import android.graphics.BitmapFactory;
+          import android.graphics.ColorMatrix;
+          import android.graphics.ColorMatrixColorFilter;
+          import android.graphics.Matrix;
+          import android.net.Uri;
           import android.os.Bundle;
           import android.graphics.Typeface;
+          import android.view.View;
           import android.view.ViewGroup;
           import android.widget.*;
 
+          import androidx.activity.result.ActivityResultLauncher;
+          import androidx.activity.result.contract.ActivityResultContracts;
           import androidx.appcompat.app.AppCompatActivity;
+          import androidx.core.graphics.Insets;
+          import androidx.core.view.ViewCompat;
+          import androidx.core.view.WindowInsetsCompat;
 
+          import java.io.InputStream;
           import java.util.Locale;
 
           public class MainActivity extends AppCompatActivity {
 
               LinearLayout chatContainer;
-              EditText input;
+              LinearLayout chatPanel;
               ScrollView scroll;
+              ScrollView photoPanel;
+
+              EditText input;
+              ImageView photoPreview;
+
+              Bitmap originalBitmap;
+              Bitmap editedBitmap;
+
+              ActivityResultLauncher<String> photoPicker;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+
                   setContentView(R.layout.activity_main);
 
+                  LinearLayout root = findViewById(R.id.rootLayout);
+
+                  int left = root.getPaddingLeft();
+                  int top = root.getPaddingTop();
+                  int right = root.getPaddingRight();
+                  int bottom = root.getPaddingBottom();
+
+                  ViewCompat.setOnApplyWindowInsetsListener(
+                          root,
+                          (v, insets) -> {
+
+                              Insets systemBars =
+                                      insets.getInsets(
+                                              WindowInsetsCompat.Type.systemBars()
+                                      );
+
+                              v.setPadding(
+                                      left + systemBars.left,
+                                      top + systemBars.top,
+                                      right + systemBars.right,
+                                      bottom + systemBars.bottom
+                              );
+
+                              return insets;
+                          }
+                  );
+
                   chatContainer = findViewById(R.id.chatContainer);
+                  chatPanel = findViewById(R.id.chatPanel);
+                  photoPanel = findViewById(R.id.photoPanel);
+
                   input = findViewById(R.id.input);
                   scroll = findViewById(R.id.scroll);
 
+                  photoPreview = findViewById(R.id.photoPreview);
+
                   Button sendBtn = findViewById(R.id.sendBtn);
                   Button clearBtn = findViewById(R.id.clearBtn);
+
+                  Button chatModeBtn = findViewById(R.id.chatModeBtn);
+                  Button photoModeBtn = findViewById(R.id.photoModeBtn);
+
+                  Button choosePhotoBtn =
+                          findViewById(R.id.choosePhotoBtn);
+
+                  Button rotateBtn =
+                          findViewById(R.id.rotateBtn);
+
+                  Button grayBtn =
+                          findViewById(R.id.grayBtn);
+
+                  Button resetBtn =
+                          findViewById(R.id.resetBtn);
+
+                  photoPicker =
+                          registerForActivityResult(
+                                  new ActivityResultContracts.GetContent(),
+                                  uri -> {
+
+                                      if (uri != null) {
+                                          loadPhoto(uri);
+                                      }
+                                  }
+                          );
 
                   addMessage(
                           "Nila AI",
@@ -238,14 +425,36 @@ jobs:
                           false
                   );
 
+                  chatModeBtn.setOnClickListener(v -> {
+
+                      chatPanel.setVisibility(View.VISIBLE);
+                      photoPanel.setVisibility(View.GONE);
+
+                  });
+
+                  photoModeBtn.setOnClickListener(v -> {
+
+                      chatPanel.setVisibility(View.GONE);
+                      photoPanel.setVisibility(View.VISIBLE);
+
+                  });
+
                   sendBtn.setOnClickListener(v -> {
-                      String q = input.getText().toString().trim();
+
+                      String q =
+                              input.getText()
+                                      .toString()
+                                      .trim();
 
                       if (q.isEmpty()) {
                           return;
                       }
 
-                      addMessage("You", q, true);
+                      addMessage(
+                              "You",
+                              q,
+                              true
+                      );
 
                       input.setText("");
 
@@ -257,6 +466,7 @@ jobs:
                   });
 
                   clearBtn.setOnClickListener(v -> {
+
                       chatContainer.removeAllViews();
 
                       addMessage(
@@ -265,89 +475,106 @@ jobs:
                               false
                       );
                   });
+
+                  choosePhotoBtn.setOnClickListener(v -> {
+
+                      photoPicker.launch("image/*");
+
+                  });
+
+                  rotateBtn.setOnClickListener(v -> {
+
+                      if (editedBitmap == null) {
+                          showMessage("முதலில் photo தேர்வு செய்யுங்கள்.");
+                          return;
+                      }
+
+                      Matrix matrix = new Matrix();
+                      matrix.postRotate(90);
+
+                      editedBitmap =
+                              Bitmap.createBitmap(
+                                      editedBitmap,
+                                      0,
+                                      0,
+                                      editedBitmap.getWidth(),
+                                      editedBitmap.getHeight(),
+                                      matrix,
+                                      true
+                              );
+
+                      photoPreview.setImageBitmap(
+                              editedBitmap
+                      );
+                  });
+
+                  grayBtn.setOnClickListener(v -> {
+
+                      if (editedBitmap == null) {
+                          showMessage("முதலில் photo தேர்வு செய்யுங்கள்.");
+                          return;
+                      }
+
+                      ColorMatrix matrix =
+                              new ColorMatrix();
+
+                      matrix.setSaturation(0);
+
+                      photoPreview.setColorFilter(
+                              new ColorMatrixColorFilter(
+                                      matrix
+                              )
+                      );
+                  });
+
+                  resetBtn.setOnClickListener(v -> {
+
+                      if (originalBitmap == null) {
+                          return;
+                      }
+
+                      editedBitmap =
+                              originalBitmap.copy(
+                                      originalBitmap.getConfig(),
+                                      true
+                              );
+
+                      photoPreview.clearColorFilter();
+
+                      photoPreview.setImageBitmap(
+                              editedBitmap
+                      );
+                  });
               }
 
-              private void addMessage(String who, String msg, boolean me) {
+              private void loadPhoto(Uri uri) {
 
-                  LinearLayout box = new LinearLayout(this);
-                  box.setOrientation(LinearLayout.VERTICAL);
-                  box.setPadding(16, 12, 16, 12);
+                  try {
 
-                  LinearLayout.LayoutParams params =
-                          new LinearLayout.LayoutParams(
-                                  ViewGroup.LayoutParams.MATCH_PARENT,
-                                  ViewGroup.LayoutParams.WRAP_CONTENT
+                      InputStream stream =
+                              getContentResolver()
+                                      .openInputStream(uri);
+
+                      originalBitmap =
+                              BitmapFactory.decodeStream(
+                                      stream
+                              );
+
+                      if (stream != null) {
+                          stream.close();
+                      }
+
+                      if (originalBitmap != null) {
+
+                          editedBitmap =
+                                  originalBitmap.copy(
+                                          originalBitmap.getConfig(),
+                                          true
+                                  );
+
+                          photoPreview.clearColorFilter();
+
+                          photoPreview.setImageBitmap(
+                                  editedBitmap
                           );
-
-                  params.setMargins(
-                          me ? 80 : 0,
-                          8,
-                          me ? 0 : 80,
-                          8
-                  );
-
-                  box.setLayoutParams(params);
-
-                  TextView name = new TextView(this);
-                  name.setText(who);
-                  name.setTypeface(null, Typeface.BOLD);
-
-                  TextView text = new TextView(this);
-                  text.setText(msg);
-                  text.setTextSize(16);
-
-                  box.addView(name);
-                  box.addView(text);
-
-                  chatContainer.addView(box);
-
-                  scroll.post(
-                          () -> scroll.fullScroll(ScrollView.FOCUS_DOWN)
-                  );
-              }
-
-              private String offlineReply(String q) {
-
-                  String s = q.toLowerCase(Locale.ROOT);
-
-                  if (s.contains("hello")
-                          || s.contains("hi")
-                          || s.contains("வணக்கம்")) {
-
-                      return "வணக்கம்! எப்படி உதவலாம்?";
-                  }
-
-                  if (s.contains("name")
-                          || s.contains("பெயர்")) {
-
-                      return "என் பெயர் Nila AI.";
-                  }
-
-                  if (s.contains("car")
-                          || s.contains("engine")
-                          || s.contains("கார்")
-                          || s.contains("எஞ்சின்")) {
-
-                      return "Automotive question detected. இந்த version offline starter.";
-                  }
-
-                  if (s.contains("gravity")
-                          || s.contains("கிராவிட்டி")
-                          || s.contains("ஈர்ப்பு")) {
-
-                      return "Gravity பற்றி கேள்வி கேட்டுள்ளீர்கள். இந்த offline version basic reply மட்டும் தரும்.";
-                  }
-
-                  return "இந்த version offline starter. Full AI features later add செய்யலாம்.";
-              }
-          }
-          EOF
-
-      - name: Build debug APK
-        run: gradle :app:assembleDebug --stacktrace
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nila-AI-debug-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+            
