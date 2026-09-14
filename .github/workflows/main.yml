@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -23,8 +23,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+
       - name: Install Android SDK components
         run: |
           yes | sdkmanager --licenses >/dev/null || true
@@ -61,9 +63,13 @@ jobs:
           cat > build.gradle <<'EOF'
           plugins {
               id 'com.android.application' version '8.5.2' apply false
-          }           cat > gradle.properties <<'EOF'
+          }
+          EOF
+
+          cat > gradle.properties <<'EOF'
           android.useAndroidX=true
           android.enableJetifier=true
+          android.suppressUnsupportedCompileSdk=35
           EOF
 
           cat > app/build.gradle <<'EOF'
@@ -93,18 +99,23 @@ jobs:
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
+
               <application
                   android:allowBackup="true"
                   android:label="Nila AI"
                   android:theme="@style/Theme.NilaAI">
+
                   <activity
                       android:name=".MainActivity"
                       android:exported="true">
+
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
+
                   </activity>
+
               </application>
           </manifest>
           EOF
@@ -157,6 +168,7 @@ jobs:
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:orientation="vertical" />
+
               </ScrollView>
 
               <EditText
@@ -184,7 +196,9 @@ jobs:
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
                       android:text="Clear" />
+
               </LinearLayout>
+
           </LinearLayout>
           EOF
 
@@ -195,7 +209,9 @@ jobs:
           import android.graphics.Typeface;
           import android.view.ViewGroup;
           import android.widget.*;
+
           import androidx.appcompat.app.AppCompatActivity;
+
           import java.util.Locale;
 
           public class MainActivity extends AppCompatActivity {
@@ -212,36 +228,64 @@ jobs:
                   chatContainer = findViewById(R.id.chatContainer);
                   input = findViewById(R.id.input);
                   scroll = findViewById(R.id.scroll);
+
                   Button sendBtn = findViewById(R.id.sendBtn);
                   Button clearBtn = findViewById(R.id.clearBtn);
 
-                  addMessage("Nila AI",
+                  addMessage(
+                          "Nila AI",
                           "வணக்கம்! நான் Nila AI. தமிழ் அல்லது English-ல் கேளுங்கள்.",
-                          false);
+                          false
+                  );
 
                   sendBtn.setOnClickListener(v -> {
                       String q = input.getText().toString().trim();
-                      if (q.isEmpty()) return;
+
+                      if (q.isEmpty()) {
+                          return;
+                      }
+
                       addMessage("You", q, true);
+
                       input.setText("");
-                      addMessage("Nila AI", offlineReply(q), false);
+
+                      addMessage(
+                              "Nila AI",
+                              offlineReply(q),
+                              false
+                      );
                   });
 
                   clearBtn.setOnClickListener(v -> {
                       chatContainer.removeAllViews();
-                      addMessage("Nila AI", "Chat cleared. புதிதாக ஆரம்பிக்கலாம்.", false);
+
+                      addMessage(
+                              "Nila AI",
+                              "Chat cleared. புதிதாக ஆரம்பிக்கலாம்.",
+                              false
+                      );
                   });
               }
 
               private void addMessage(String who, String msg, boolean me) {
+
                   LinearLayout box = new LinearLayout(this);
                   box.setOrientation(LinearLayout.VERTICAL);
                   box.setPadding(16, 12, 16, 12);
 
-                  LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                          ViewGroup.LayoutParams.MATCH_PARENT,
-                          ViewGroup.LayoutParams.WRAP_CONTENT);
-                  params.setMargins(me ? 80 : 0, 8, me ? 0 : 80, 8);
+                  LinearLayout.LayoutParams params =
+                          new LinearLayout.LayoutParams(
+                                  ViewGroup.LayoutParams.MATCH_PARENT,
+                                  ViewGroup.LayoutParams.WRAP_CONTENT
+                          );
+
+                  params.setMargins(
+                          me ? 80 : 0,
+                          8,
+                          me ? 0 : 80,
+                          8
+                  );
+
                   box.setLayoutParams(params);
 
                   TextView name = new TextView(this);
@@ -254,27 +298,47 @@ jobs:
 
                   box.addView(name);
                   box.addView(text);
+
                   chatContainer.addView(box);
 
-                  scroll.post(() -> scroll.fullScroll(ScrollView.FOCUS_DOWN));
+                  scroll.post(
+                          () -> scroll.fullScroll(ScrollView.FOCUS_DOWN)
+                  );
               }
 
               private String offlineReply(String q) {
+
                   String s = q.toLowerCase(Locale.ROOT);
 
-                  if (s.contains("hello") || s.contains("hi") || s.contains("வணக்கம்"))
+                  if (s.contains("hello")
+                          || s.contains("hi")
+                          || s.contains("வணக்கம்")) {
+
                       return "வணக்கம்! எப்படி உதவலாம்?";
+                  }
 
-                  if (s.contains("name") || s.contains("பெயர்"))
+                  if (s.contains("name")
+                          || s.contains("பெயர்")) {
+
                       return "என் பெயர் Nila AI.";
+                  }
 
-                  if (s.contains("car") || s.contains("engine") || s.contains("கார்") || s.contains("எஞ்சின்"))
-                      return "Automotive question detected. இந்த version offline starter; AI API சேர்த்தால் detailed diagnosis செய்யலாம்.";
+                  if (s.contains("car")
+                          || s.contains("engine")
+                          || s.contains("கார்")
+                          || s.contains("எஞ்சின்")) {
 
-                  if (s.contains("gravity") || s.contains("கிராவிட்டி") || s.contains("ஈர்ப்பு"))
+                      return "Automotive question detected. இந்த version offline starter.";
+                  }
+
+                  if (s.contains("gravity")
+                          || s.contains("கிராவிட்டி")
+                          || s.contains("ஈர்ப்பு")) {
+
                       return "Gravity பற்றி கேள்வி கேட்டுள்ளீர்கள். இந்த offline version basic reply மட்டும் தரும்.";
+                  }
 
-                  return "இந்த version offline starter. Full AI replies வேண்டுமெனில் AI API/backend connect செய்ய வேண்டும்.";
+                  return "இந்த version offline starter. Full AI features later add செய்யலாம்.";
               }
           }
           EOF
@@ -287,4 +351,3 @@ jobs:
         with:
           name: Nila-AI-debug-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-          
